@@ -1,0 +1,9 @@
+---
+dependencies:
+  - git
+  - graphviz
+  - pkg-config
+  - libssl-dev
+  - libtool-bin
+  - libglib2.0-dev
+  - build-essential

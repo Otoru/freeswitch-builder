@@ -1,0 +1,10 @@
+---
+dependencies:
+  - git
+  - debhelper
+  - dpatch
+  - doxygen
+  - xsltproc
+  - libtool-bin
+  - libtiff-dev
+  - build-essential

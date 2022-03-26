@@ -1,0 +1,48 @@
+---
+- name: set enviroment variables
+  include_vars: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
+
+- name: install dependencies
+  package:
+    name: "{{ dependencies }}"
+    update_cache: yes
+    state: present
+
+- name: Create build directory
+  tempfile:
+    state: directory
+  register: build
+
+- name: clone source code
+  git:
+    repo: "{{ repository }}"
+    dest: "/{{ build.path }}/sofia-sip"
+    version: "{{ branch }}"
+
+- name: create debian packages
+  shell: dpkg-buildpackage -b -uc -us
+  args:
+    chdir: "{{ build.path }}/sofia-sip"
+
+- name: Create packages directories
+  ansible.builtin.file:
+    path: /packages/{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}/
+    state: directory
+
+- name: Identify all files in src directory
+  find:
+    paths:
+      - "{{ build.path }}"
+    use_regex: yes
+    file_type: file
+    patterns:
+      - "^.*.deb$"
+  register: packages
+
+- name: Move packages to output
+  copy:
+    src: "{{ item.path }}"
+    dest: /packages/{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}/
+    remote_src: true
+  when: "packages.files | length > 0"
+  loop: "{{ packages.files }}"
